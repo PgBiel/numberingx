@@ -2,24 +2,24 @@
 
 /// Parse a style object into a descriptor
 #let parse-style(s) = {
-  assert(type(s) == "dictionary", message: "Invalid style: " + repr(s) + ".")
+  assert(type(s) == dictionary, message: "Invalid style: " + repr(s) + ".")
   assert("system" in s, message: repr(s) + " is missing a `system` key.")
   let sys = s.system
   assert(
     sys in ("cyclic", "symbolic", "alphabetic", "fixed", "numeric", "additive")
-    or (type(sys) == "array" and sys.len() == 2
-      and sys.at(0) == "fixed" and type(sys.at(1)) == "integer"),
+    or (type(sys) == array and sys.len() == 2
+      and sys.at(0) == "fixed" and type(sys.at(1)) == int),
     message: "Invalid system: " + repr(sys) + "."
   )
 
   let desc = (:)
-  desc.system = if type(sys) == "string" { sys } else { sys.at(0) }
+  desc.system = if type(sys) == str { sys } else { sys.at(0) }
   if sys == "fixed" { desc.offset = 1 }
-  if type(sys) == "array" { desc.offset = int(sys.at(1)) }
+  if type(sys) == array { desc.offset = int(sys.at(1)) }
 
   desc.fallback = if "fallback" in s {
     assert(
-      type(s.fallback) == "string",
+      type(s.fallback) == str,
       message: "Invalid fallback value: " + repr(s.fallback) + "."
     )
     s.fallback
@@ -29,8 +29,8 @@
 
   let (min, max) = if "range" in s {
     assert(
-      type(s.range) == "array" and s.range.len() == 2
-      and s.range.all((n) => type(n) == "integer" or n == "inf"),
+      type(s.range) == array and s.range.len() == 2
+      and s.range.all((n) => type(n) == int or n == "inf"),
       message: repr(s.range) + " is not a valid range."
     )
     s.range.map((x) => if x == "inf" { calc.inf } else { x })
@@ -48,7 +48,7 @@
   desc.negative = if desc.system in  allow-negative  {
     if "negative" in s {
       assert(
-        type(s.negative) in ("string", "content"),
+        type(s.negative) in (str, content),
         message: "Invalid negative marker: " + repr(s.negative) + "."
       )
       s.negative
@@ -62,11 +62,11 @@
       "additive-symbols" in s,
       message: repr(s) + " is missing an `additive-symbols` key."
     )
-    let check-sym(sym) = (type(sym) == "array" and sym.len() == 2
-      and type(sym.at(0)) == "integer"
-      and type(sym.at(1)) in ("string", "content"))
+    let check-sym(sym) = (type(sym) == array and sym.len() == 2
+      and type(sym.at(0)) == int
+      and type(sym.at(1)) in (str, content))
     assert(
-      type(s.additive-symbols) == "array" and s.additive-symbols.len() > 0
+      type(s.additive-symbols) == array and s.additive-symbols.len() > 0
         and s.additive-symbols.all(check-sym),
       message: "Invalid symbols: " + repr(s.additive-symbols) + "."
     )
@@ -74,8 +74,8 @@
   } else {
     assert("symbols" in s, message: repr(s) + " is missing a `symbols` key.")
     assert(
-      type(s.symbols) == "array" and s.symbols.len() > 0 and
-      s.symbols.all((sym) => type(sym) in ("string", "content")),
+      type(s.symbols) == array and s.symbols.len() > 0 and
+      s.symbols.all((sym) => type(sym) in (str, content)),
       message: "Invalid symbols: " + repr(s.symbols) + "."
     )
     s.symbols
@@ -216,7 +216,7 @@
 
 /// Format a number using a given style descriptor.
 #let format-one(desc, n) = {
-  assert(type(n) == "integer", message: "only integer can be formatted")
+  assert(type(n) == int, message: "only integer can be formatted")
   let fallback() = format-one(get-descriptor(desc.fallback), n)
 
   let m = if desc.negative != none { calc.abs(n) } else { n }
